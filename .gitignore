@@ -1,0 +1,60 @@
+# Environment variables
+.env
+
+# Node.js dependencies
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Docker volumes
+*/volumes/
+postgres_storage/
+n8n_storage/
+ollama_storage/
+qdrant_storage/
+open-webui/
+flowise/
+frontend_node_modules/
+
+# n8n specific
+n8n/backup/credentials/
+n8n/backup/.credentials
+
+# Frontend build files
+frontend/build/
+frontend/dist/
+frontend/.cache/
+
+# Logs
+logs/
+*.log
+
+# OS specific files
+.DS_Store
+Thumbs.db
+
+# Editor directories and files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+*.temp
+
+# Specific to Flowise
+.flowise/
+.flowise.json
+
+# Sensitive data
+**/credentials.json
+**/credentials.yml
+**/credentials.yaml
+*jwt_secret*
+*encryption_key*
+
+# Shared artifacts
+shared/
+data/

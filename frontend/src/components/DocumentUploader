@@ -1,0 +1,111 @@
+import React, { useState } from 'react';
+import './DocumentUploader.css';
+
+const DocumentUploader = () => {
+    const [file, setFile] = useState(null);
+    const [uploading, setUploading] = useState(false);
+    const [result, setResult] = useState(null);
+    const [error, setError] = useState(null);
+
+    const handleFileChange = (e) => {
+        if (e.target.files.length > 0) {
+            setFile(e.target.files[0]);
+            setResult(null);
+            setError(null);
+        }
+    };
+
+    const handleUpload = async () => {
+        if (!file) return;
+
+        setUploading(true);
+        setResult(null);
+        setError(null);
+
+        try {
+            const formData = new FormData();
+            formData.append('data', file);
+
+            // Add metadata as JSON
+            const metadata = {
+                filename: file.name,
+                fileType: file.type,
+                uploadedAt: new Date().toISOString()
+            };
+
+            formData.append('metadata', JSON.stringify(metadata));
+
+            const response = await fetch('http://localhost:5678/webhook/ingest_document', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!response.ok) {
+                throw new Error(`Upload failed with status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            setResult(data);
+        } catch (err) {
+            console.error('Error uploading document:', err);
+            setError(err.message || 'An error occurred during upload');
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    return (
+        <div className="document-uploader">
+            <h2>Upload Documents</h2>
+            <p className="uploader-description">
+                Upload PDFs, text files, or other documents to add to the knowledge base.
+            </p>
+
+            <div className="upload-container">
+                <input
+                    type="file"
+                    id="document-file"
+                    onChange={handleFileChange}
+                    disabled={uploading}
+                    accept=".pdf,.txt,.doc,.docx"
+                />
+                <label htmlFor="document-file" className="file-label">
+                    {file ? file.name : 'Choose a file'}
+                </label>
+
+                <button
+                    className="upload-button"
+                    onClick={handleUpload}
+                    disabled={!file || uploading}
+                >
+                    {uploading ? 'Processing...' : 'Upload & Process'}
+                </button>
+            </div>
+
+            {error && (
+                <div className="upload-error">
+                    <p>Error: {error}</p>
+                </div>
+            )}
+
+            {result && (
+                <div className="upload-result">
+                    <h3>Upload Complete</h3>
+                    <p className="result-message">{result.message}</p>
+                    <div className="result-stats">
+                        <div className="stat-item">
+                            <span className="stat-label">Total Chunks:</span>
+                            <span className="stat-value">{result.totalChunks}</span>
+                        </div>
+                        <div className="stat-item">
+                            <span className="stat-label">Failed Chunks:</span>
+                            <span className="stat-value">{result.failedChunks}</span>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default DocumentUploader;
